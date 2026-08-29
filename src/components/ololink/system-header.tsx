@@ -1,6 +1,6 @@
 'use client';
 
-import { formatT, type OloLinkState } from '@/hooks/use-ololink';
+import { type OloLinkState } from '@/hooks/use-ololink';
 import { SCENARIO_ORDER, SCENARIOS, type ScenarioId } from '@/lib/ololink';
 import { cn } from '@/lib/utils';
 import logoUrl from '@/assets/logo.png';
