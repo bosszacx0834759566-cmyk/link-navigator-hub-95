@@ -14,10 +14,11 @@ import {
 } from 'react';
 import * as THREE from 'three';
 
-import earthDay from '@/assets/earth-map.jpg';
+import { EARTH_8K_URL, EARTH_TILE_BY_REGION, type EarthTile } from '@/lib/earth-textures';
 import earthNight from '@/assets/earth_lights_2048.png';
 import earthClouds from '@/assets/earth_clouds_1024.png';
 import earthSpec from '@/assets/earth_specular_2048.jpg';
+
 import {
   ASSET_BY_ID,
   ASSETS,
