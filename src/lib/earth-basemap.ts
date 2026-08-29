@@ -5,7 +5,7 @@
  * as a single raster so the 2D map and the globe read as one planet.
  */
 
-import earthDay from '@/assets/earth-map.jpg';
+import { EARTH_8K_URL } from '@/lib/earth-textures';
 import earthNight from '@/assets/earth_lights_2048.png';
 import earthClouds from '@/assets/earth_clouds_1024.png';
 
@@ -13,8 +13,8 @@ import earthClouds from '@/assets/earth_clouds_1024.png';
 const SUN_LAT = 14;
 const SUN_LON = 178;
 
-const W = 2048;
-const H = 1024;
+const W = 4096;
+const H = 2048;
 
 function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -76,7 +76,7 @@ export function earthBasemap(): Promise<string> {
   if (cache) return cache;
   cache = (async () => {
     const [day, night, clouds] = await Promise.all([
-      loadImage(earthDay),
+      loadImage(EARTH_8K_URL),
       loadImage(earthNight),
       loadImage(earthClouds),
     ]);
