@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import earthDay from '@/assets/earth-map.jpg';
+import { EARTH_8K_URL } from '@/lib/earth-textures';
 import { earthBasemap } from '@/lib/earth-basemap';
 import { cn } from '@/lib/utils';
 import type { OloLinkState } from '@/hooks/use-ololink';
@@ -355,7 +355,7 @@ export function MapScene({ state }: { state: OloLinkState }) {
           <rect width={MAP_W} height={MAP_H} fill="#0a1a2e" />
           {/* flattened earth — same albedo / clouds / night lights as the globe */}
           <image
-            href={basemap ?? earthDay}
+            href={basemap ?? EARTH_8K_URL}
             x={0}
             y={0}
             width={MAP_W}
