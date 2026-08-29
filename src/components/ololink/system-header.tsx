@@ -78,19 +78,6 @@ export function SystemHeader({ state }: { state: OloLinkState }) {
         ))}
       </div>
 
-      <span className="hidden h-5 w-px shrink-0 bg-white/[0.08] lg:block" />
-
-      <div className="hidden flex-1 items-center gap-4 overflow-x-auto font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground/60 [scrollbar-width:none] lg:flex">
-        <span className="text-sky-200/90">{formatT(state.missionTime)}</span>
-        <span>{state.profile.networkHealth}</span>
-        <span>{state.telemetry.latency} ms</span>
-        <span>{state.telemetry.bandwidth.toFixed(2)} Gbps</span>
-        <span>{state.telemetry.availability.toFixed(2)}%</span>
-        {state.profile.alerts.length > 0 && (
-          <span className="text-rose-300/90">{state.profile.alerts.length} alerts</span>
-        )}
-      </div>
-
       {/* active scenario mode summary (compact screens) */}
       <span className="flex-1 text-right font-mono text-[9px] uppercase tracking-[0.2em] text-sky-200/70 lg:hidden">
         {SCENARIOS[state.scenarioId].short}
