@@ -212,14 +212,86 @@ function curveForSegment(segment: Segment) {
 /** Direction of the sun — chosen so the terminator crosses both regions. */
 export const SUN_DIR = new THREE.Vector3(...geoToVec(14, 178, 0)).normalize();
 
+const DEG = Math.PI / 180;
+
+/**
+ * Sharpens a texture for close-up viewing without inflating GPU memory:
+ * trilinear mipmapping (so the 8K map does not shimmer when zoomed out) plus
+ * hardware anisotropic filtering (so it stays crisp at grazing angles).
+ */
+function tuneEarthTexture(tex: THREE.Texture, maxAniso: number, srgb = true) {
+  if (srgb) tex.colorSpace = THREE.SRGBColorSpace;
+  tex.generateMipmaps = true;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.anisotropy = Math.min(8, maxAniso);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/**
+ * Native-resolution imagery patch laid over the 8K globe for the region the
+ * camera is looking at. Only one tile is ever resident, so the extra GPU cost
+ * is a single ~3k x 1.4k texture.
+ */
+function RegionTile({ tile }: { tile: EarthTile }) {
+  const gl = useThree((s) => s.gl);
+  const map = useLoader(THREE.TextureLoader, tile.url);
+  useMemo(() => tuneEarthTexture(map, gl.capabilities.getMaxAnisotropy()), [map, gl]);
+
+  const args = useMemo(
+    () =>
+      [
+        1,
+        96,
+        96,
+        (tile.lonMin + 180) * DEG,
+        (tile.lonMax - tile.lonMin) * DEG,
+        (90 - tile.latMax) * DEG,
+        (tile.latMax - tile.latMin) * DEG,
+      ] as const,
+    [tile]
+  );
+
+  return (
+    <mesh scale={1.0006} renderOrder={1}>
+      <sphereGeometry args={[...args]} />
+      <meshStandardMaterial
+        map={map}
+        metalness={0.05}
+        roughness={0.82}
+        color="#e6eef5"
+        polygonOffset
+        polygonOffsetFactor={-1}
+      />
+    </mesh>
+  );
+}
+
 function Earth() {
-  const maps = useLoader(THREE.TextureLoader, [earthDay, earthNight, earthClouds, earthSpec]);
+  const gl = useThree((s) => s.gl);
+  const { level, region } = useLod();
+  const maps = useLoader(THREE.TextureLoader, [
+    EARTH_8K_URL,
+    earthNight,
+    earthClouds,
+    earthSpec,
+  ]);
   const day = maps[0]!;
   const night = maps[1]!;
   const clouds = maps[2]!;
   const spec = maps[3]!;
-  day.colorSpace = THREE.SRGBColorSpace;
-  night.colorSpace = THREE.SRGBColorSpace;
+
+  useMemo(() => {
+    const maxAniso = gl.capabilities.getMaxAnisotropy();
+    tuneEarthTexture(day, maxAniso);
+    tuneEarthTexture(night, maxAniso);
+    tuneEarthTexture(clouds, maxAniso, false);
+  }, [day, night, clouds, gl]);
+
+  /** regional + local views get the native-resolution imagery tile */
+  const tile = level !== 'global' && region ? EARTH_TILE_BY_REGION[region] : undefined;
 
   const cloudRef = useRef<THREE.Mesh>(null);
   useFrame((_, d) => {
@@ -228,7 +300,7 @@ function Earth() {
 
   return (
     <group>
-      {/* realistic surface: satellite albedo, sun-lit */}
+      {/* realistic surface: NASA Blue Marble 8K albedo, sun-lit */}
       <mesh>
         <sphereGeometry args={[1, 128, 128]} />
         <meshStandardMaterial
@@ -239,6 +311,14 @@ function Earth() {
           color="#e6eef5"
         />
       </mesh>
+
+      {/* high-resolution regional imagery */}
+      {tile ? (
+        <Suspense fallback={null}>
+          <RegionTile tile={tile} />
+        </Suspense>
+      ) : null}
+
       {/* city lights — additive, masked to the night hemisphere only */}
       <mesh scale={1.001}>
         <sphereGeometry args={[1, 96, 96]} />
@@ -290,6 +370,7 @@ function Earth() {
     </group>
   );
 }
+
 
 
 /* --------------------------------------------- orbital trajectory rings */
