@@ -405,18 +405,20 @@ export function MapScene({ state }: { state: OloLinkState }) {
                 </circle>
                 {/* dense core */}
                 <circle cx={p.x} cy={p.y} r={r * 0.75} fill={`url(#${grad})`} opacity={0.55 + c.severity / 400} />
-                <g transform={`translate(${p.x} ${p.y - r * 0.75 - 5}) scale(${inv})`}>
-                  <text
-                    textAnchor="middle"
-                    fill={color}
-                    fillOpacity={0.8}
-                    fontSize={6}
-                    letterSpacing={1}
-                    className="font-mono uppercase"
-                  >
-                    {c.kind} {c.severity}
-                  </text>
-                </g>
+                {c.kind !== 'CLOUD' && (
+                  <g transform={`translate(${p.x} ${p.y - r * 0.75 - 5}) scale(${inv})`}>
+                    <text
+                      textAnchor="middle"
+                      fill={color}
+                      fillOpacity={0.8}
+                      fontSize={6}
+                      letterSpacing={1}
+                      className="font-mono uppercase"
+                    >
+                      {c.kind} {c.severity}
+                    </text>
+                  </g>
+                )}
               </g>
             );
           })}
